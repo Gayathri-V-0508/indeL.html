@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disaster Relief Supply Distribution Optimization System</title>
+  <style>
+    :root {
+      --navy: #14243a;
+      --blue: #2457d6;
+      --blue-light: #eaf0ff;
+      --teal: #0f9d8a;
+      --red: #d94b4b;
+      --amber: #d98b16;
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #172338;
+      --muted: #68758a;
+      --border: #e2e8f0;
+      --shadow: 0 8px 24px rgba(20, 36, 58, .07);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
+    header {
+      background: linear-gradient(120deg, #14243a, #244c82);
+      color: white; padding: 25px clamp(18px, 4vw, 48px);
+      display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
+    }
+    .brand { display: flex; gap: 14px; align-items: center; }
+    .brand-icon { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: rgba(255,255,255,.14); font-size: 26px; }
+    h1 { margin: 0; font-size: clamp(21px, 3vw, 29px); line-height: 1.25; }
+    header p { margin: 7px 0 0; color: #d8e4f5; font-size: 14px; }
+    .status { background: rgba(15,157,138,.18); border: 1px solid rgba(124,255,222,.38); color: #d2fff3; border-radius: 999px; padding: 9px 13px; font-size: 12px; font-weight: 700; }
+    main { max-width: 1450px; margin: auto; padding: 26px clamp(14px, 3vw, 36px) 45px; }
+    .intro { display: flex; justify-content: space-between; gap: 18px; align-items: end; flex-wrap: wrap; margin-bottom: 22px; }
+    .intro h2 { margin: 0 0 6px; font-size: 23px; }
+    .intro p { margin: 0; color: var(--muted); line-height: 1.5; font-size: 14px; }
+    .button { border: 0; border-radius: 10px; padding: 11px 15px; font-weight: 700; cursor: pointer; font-size: 13px; transition: .15s; }
+    .button:hover { transform: translateY(-1px); filter: brightness(.97); }
+    .primary { background: var(--blue); color: white; }
+    .secondary { background: var(--blue-light); color: var(--blue); }
+    .danger { background: #fff0f0; color: var(--red); }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-bottom: 22px; }
+    .stat, .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); }
+    .stat { padding: 19px; }
+    .stat-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; gap: 8px; }
+    .stat-icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--blue-light); font-size: 18px; }
+    .stat strong { display: block; font-size: 29px; margin: 12px 0 4px; }
+    .stat small { color: var(--muted); font-size: 12px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.45fr); gap: 18px; align-items: start; }
+    .stack { display: grid; gap: 18px; min-width: 0; }
+    .panel { padding: 21px; min-width: 0; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 17px; }
+    .panel h3 { margin: 0; font-size: 17px; }
+    .sub { color: var(--muted); font-size: 12px; margin-top: 5px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    label { font-size: 12px; font-weight: 700; color: #47566d; }
+    input, select { width: 100%; min-width: 0; border: 1px solid #d7dfeb; border-radius: 9px; padding: 11px 10px; background: white; color: var(--text); font-size: 13px; outline: none; }
+    input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(36,87,214,.1); }
+    .form-actions { display: flex; gap: 9px; margin-top: 15px; flex-wrap: wrap; }
+    .table-wrap { overflow-x: auto; width: 100%; }
+    table { width: 100%; border-collapse: collapse; min-width: 490px; font-size: 12px; }
+    th { text-align: left; color: var(--muted); font-weight: 700; background: #f8faff; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .pill { display: inline-block; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+    .high { color: #b42318; background: #ffebea; }
+    .medium { color: #9a5b00; background: #fff2d6; }
+    .low { color: #08745f; background: #dff8f1; }
+    .map { background: #f6f9ff; border: 1px solid var(--border); border-radius: 13px; padding: 14px; }
+    .map svg { width: 100%; height: auto; display: block; }
+    .legend { display: flex; flex-wrap: wrap; gap: 13px; font-size: 11px; color: var(--muted); margin-top: 11px; }
+    .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+    .result { background: #f0fbf8; border: 1px solid #c8eee4; border-radius: 12px; padding: 15px; margin-top: 14px; }
+    .result h4 { margin: 0 0 8px; font-size: 14px; }
+    .result p { margin: 5px 0; font-size: 13px; color: #315c56; line-height: 1.5; }
+    .algorithm-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .algo { border: 1px solid var(--border); border-radius: 11px; padding: 12px; }
+    .algo strong { display: block; font-size: 12px; margin-bottom: 5px; }
+    .algo span { color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .notice { color: var(--muted); font-size: 11px; line-height: 1.5; margin-top: 12px; }
+    .empty { text-align: center; color: var(--muted); padding: 20px; font-size: 12px; }
+    footer { text-align: center; padding: 18px; color: var(--muted); font-size: 11px; }
+    @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px) { header { align-items: flex-start; } .status { margin-left: 62px; } .stats { gap: 9px; } .stat { padding: 13px; } .stat strong { font-size: 24px; } .form-grid, .algorithm-list { grid-template-columns: 1fr; } .field.full { grid-column: auto; } .panel { padding: 15px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">🛟</div>
+      <div>
+        <h1>Disaster Relief Supply Distribution</h1>
+        <p>Optimization System · Emergency Logistics Dashboard</p>
+      </div>
+    </div>
+    <div class="status">● SYSTEM DEMO ACTIVE</div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div>
+        <h2>Relief Operations Overview</h2>
+        <p>Coordinate essential supplies, monitor affected regions, and estimate an efficient delivery route.</p>
+      </div>
+      <button class="button secondary" id="resetBtn" type="button">Reset demo data</button>
+    </section>
+
+    <section class="stats" aria-label="System summary">
+      <article class="stat">
+        <div class="stat-top"><span>Affected regions</span><span class="stat-icon">📍</span></div>
+        <strong id="regionCount">5</strong><small>Regions registered in the system</small>
+      </article>
+      <article class="stat">
+        <div class="stat-top"><span>Supply items</span><span class="stat-icon">📦</span></div>
+        <strong id="supplyCount">6</strong><small>Different relief supply entries</small>
+      </article>
+      <article class="stat">
+        <div class="stat-top"><span>Vehicle capacity</span><span class="stat-icon">🚚</span></div>
+        <strong id="capacityStat">50</strong><small>Capacity units available per vehicle</small>
+      </article>
+      <article class="stat">
+        <div class="stat-top"><span>Road connections</span><span class="stat-icon">🛣️</span></div>
+        <strong id="roadCount">9</strong><small>Known connections in demo network</small>
+      </article>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <section class="panel">
+          <div class="panel-head">
+            <div><h3>Register affected region</h3><div class="sub">Add a location requiring emergency supplies</div></div>
+          </div>
+          <form id="regionForm">
+            <div class="form-grid">
+              <div class="field"><label for="regionName">Region name</label><input id="regionName" required placeholder="e.g. North Village"></div>
+              <div class="field"><label for="priority">Priority level</label><select id="priority"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+              <div class="field"><label for="demand">Supply demand (units)</label><input id="demand" type="number" min="1" value="20" required></div>
+              <div class="field"><label for="regionDistance">Distance from depot (km)</label><input id="regionDistance" type="number" min="1" value="8" required></div>
+            </div>
+            <div class="form-actions"><button class="button primary" type="submit">+ Add region</button></div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div><h3>Supply inventory</h3><div class="sub">Relief items available for distribution</div></div>
+          </div>
+          <form id="supplyForm">
+            <div class="form-grid">
+              <div class="field"><label for="itemName">Item name</label><input id="itemName" required placeholder="e.g. Drinking water"></div>
+              <div class="field"><label for="itemQty">Available quantity</label><input id="itemQty" type="number" min="1" value="100" required></div>
+              <div class="field"><label for="itemWeight">Weight per unit</label><input id="itemWeight" type="number" min="0.1" step="0.1" value="1" required></div>
+              <div class="field"><label for="itemValue">Priority value</label><input id="itemValue" type="number" min="1" value="10" required></div>
+            </div>
+            <div class="form-actions"><button class="button primary" type="submit">+ Add supply</button></div>
+          </form>
+          <div class="table-wrap" style="margin-top:16px">
+            <table>
+              <thead><tr><th>Supply item</th><th>Quantity</th><th>Weight/unit</th><th>Value/unit</th><th>Action</th></tr></thead>
+              <tbody id="supplyTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div><h3>Vehicle and objective settings</h3><div class="sub">Set capacity and travel-time/cost preference</div></div>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label for="capacity">Vehicle capacity (weight units)</label><input id="capacity" type="number" min="1" value="50"></div>
+            <div class="field"><label for="alpha">Travel time importance (α)</label><input id="alpha" type="number" min="0" step="0.1" value="1"></div>
+            <div class="field"><label for="beta">Transport cost importance (β)</label><input id="beta" type="number" min="0" step="0.1" value="1"></div>
+          </div>
+          <div class="form-actions"><button class="button primary" id="optimizeBtn" type="button">Optimize demo plan</button></div>
+          <div class="result" id="optimizationResult" aria-live="polite">
+            <h4>Optimization summary</h4>
+            <p>Run the planner to estimate a supply selection and a priority-based delivery order.</p>
+          </div>
+          <p class="notice">Educational demonstration: the planner uses a simple greedy inventory selection and nearest-distance ordering. It is not a live emergency dispatch service and does not run all algorithms described in the report.</p>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="panel">
+          <div class="panel-head">
+            <div><h3>Road network overview</h3><div class="sub">Illustrative depot-to-region connections</div></div>
+            <span class="pill low">Network demo</span>
+          </div>
+          <div class="map">
+            <svg viewBox="0 0 600 330" role="img" aria-label="Illustrative road network connecting the relief depot and five affected regions">
+              <defs>
+                <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e6edf8" stroke-width="1"/></pattern>
+              </defs>
+              <rect width="600" height="330" rx="10" fill="url(#grid)"/>
+              <g stroke="#a8b9d1" stroke-width="5" stroke-linecap="round" fill="none">
+                <path d="M300 160 L150 70 L90 180 L220 265 L410 255 L500 130 L300 160"/>
+                <path d="M150 70 L500 130 M90 180 L300 160 M220 265 L300 160 M410 255 L500 130"/>
+              </g>
+              <g stroke="#ffffff" stroke-width="1.5" stroke-dasharray="6 7" fill="none">
+                <path d="M300 160 L150 70 L90 180 L220 265 L410 255 L500 130"/>
+                <path d="M150 70 L500 130 M90 180 L300 160 M220 265 L300 160 M410 255 L500 130"/>
+              </g>
+              <g font-family="Arial" text-anchor="middle">
+                <circle cx="300" cy="160" r="25" fill="#2457d6" stroke="white" stroke-width="4"/><text x="300" y="166" fill="white" font-size="17">D</text><text x="300" y="201" fill="#14243a" font-size="13" font-weight="bold">Relief Depot</text>
+                <circle cx="150" cy="70" r="18" fill="#d94b4b" stroke="white" stroke-width="4"/><text x="150" y="75" fill="white" font-size="12" font-weight="bold">1</text><text x="150" y="42" fill="#14243a" font-size="12">North Village</text>
+                <circle cx="90" cy="180" r="18" fill="#d98b16" stroke="white" stroke-width="4"/><text x="90" y="185" fill="white" font-size="12" font-weight="bold">2</text><text x="90" y="213" fill="#14243a" font-size="12">River Side</text>
+                <circle cx="220" cy="265" r="18" fill="#d98b16" stroke="white" stroke-width="4"/><text x="220" y="270" fill="white" font-size="12" font-weight="bold">3</text><text x="220" y="300" fill="#14243a" font-size="12">East Colony</text>
+                <circle cx="410" cy="255" r="18" fill="#0f9d8a" stroke="white" stroke-width="4"/><text x="410" y="260" fill="white" font-size="12" font-weight="bold">4</text><text x="410" y="289" fill="#14243a" font-size="12">Hill Area</text>
+                <circle cx="500" cy="130" r="18" fill="#0f9d8a" stroke="white" stroke-width="4"/><text x="500" y="135" fill="white" font-size="12" font-weight="bold">5</text><text x="500" y="101" fill="#14243a" font-size="12">South Camp</text>
+              </g>
+            </svg>
+            <div class="legend">
+              <span><i class="dot" style="background:#2457d6"></i>Relief depot</span>
+              <span><i class="dot" style="background:#d94b4b"></i>High priority</span>
+              <span><i class="dot" style="background:#d98b16"></i>Medium priority</span>
+              <span><i class="dot" style="background:#0f9d8a"></i>Low priority</span>
+            </div>
+          </div>
+          <p class="notice">The diagram is illustrative only. Road lengths and links shown here are not real geographic data.</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div><h3>Affected regions</h3><div class="sub">Current region list and demand</div></div>
+          </div>
+          <div class="table-wrap">
+            <table style="min-width:450px">
+              <thead><tr><th>Region</th><th>Priority</th><th>Demand</th><th>Depot distance</th><th>Action</th></tr></thead>
+              <tbody id="regionTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div><h3>Algorithms used in the report</h3><div class="sub">Where each algorithm family fits in the workflow</div></div>
+          </div>
+          <div class="algorithm-list">
+            <div class="algo"><strong>Divide and Conquer</strong><span>Merge Sort, Quick Sort, Binary Search, Max-Min and Strassen</span></div>
+            <div class="algo"><strong>Greedy Algorithms</strong><span>Fractional Knapsack, Activity Selection and Job Sequencing</span></div>
+            <div class="algo"><strong>Dynamic Programming</strong><span>0/1 Knapsack, LCS and Optimal BST</span></div>
+            <div class="algo"><strong>Graph Algorithms</strong><span>BFS, DFS, Prim, Kruskal, Dijkstra, Bellman-Ford and Floyd-Warshall</span></div>
+            <div class="algo"><strong>Route Optimization</strong><span>Backtracking, Branch and Bound and MST-based 2-approximation</span></div>
+            <div class="algo"><strong>Objective Function</strong><span>Minimize Z = α × T + β × C, balancing travel time and transport cost</span></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <footer>Disaster Relief Supply Distribution Optimization System · Academic project dashboard</footer>
+
+  <script>
+    const initialRegions = [
+      { id: 1, name: "North Village", priority: "High", demand: 35, distance: 4 },
+      { id: 2, name: "River Side", priority: "High", demand: 30, distance: 2 },
+      { id: 3, name: "East Colony", priority: "Medium", demand: 20, distance: 8 },
+      { id: 4, name: "Hill Area", priority: "Medium", demand: 25, distance: 10 },
+      { id: 5, name: "South Camp", priority: "Low", demand: 15, distance: 13 }
+    ];
+    const initialSupplies = [
+      { id: 1, name: "Rice packets", qty: 100, weight: 1, value: 6 },
+      { id: 2, name: "Drinking water", qty: 80, weight: 2, value: 10 },
+      { id: 3, name: "Medical kits", qty: 30, weight: 1, value: 20 },
+      { id: 4, name: "Blankets", qty: 50, weight: 2, value: 8 },
+      { id: 5, name: "ORS packets", qty: 120, weight: 0.2, value: 7 },
+      { id: 6, name: "Tents", qty: 20, weight: 5, value: 15 }
+    ];
+    let regions = structuredClone(initialRegions);
+    let supplies = structuredClone(initialSupplies);
+    let nextRegionId = 6;
+    let nextSupplyId = 7;
+
+    const $ = id => document.getElementById(id);
+    const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[char]));
+    const priorityClass = priority => priority.toLowerCase();
+
+    function renderRegions() {
+      $("regionTable").innerHTML = regions.length ? regions.map(region => `
+        <tr>
+          <td>${escapeHTML(region.name)}</td>
+          <td><span class="pill ${priorityClass(region.priority)}">${escapeHTML(region.priority)}</span></td>
+          <td>${region.demand} units</td>
+          <td>${region.distance} km</td>
+          <td><button class="button danger" type="button" data-delete-region="${region.id}">Remove</button></td>
+        </tr>`).join("") : '<tr><td colspan="5" class="empty">No regions added yet.</td></tr>';
+      $("regionCount").textContent = regions.length;
+      $("regionTable").querySelectorAll("[data-delete-region]").forEach(button => {
+        button.addEventListener("click", () => {
+          regions = regions.filter(region => region.id !== Number(button.dataset.deleteRegion));
+          renderRegions();
+        });
+      });
+    }
+
+    function renderSupplies() {
+      $("supplyTable").innerHTML = supplies.length ? supplies.map(item => `
+        <tr>
+          <td>${escapeHTML(item.name)}</td><td>${item.qty}</td><td>${item.weight}</td><td>${item.value}</td>
+          <td><button class="button danger" type="button" data-delete-supply="${item.id}">Remove</button></td>
+        </tr>`).join("") : '<tr><td colspan="5" class="empty">No supplies added yet.</td></tr>';
+      $("supplyCount").textContent = supplies.length;
+      $("supplyTable").querySelectorAll("[data-delete-supply]").forEach(button => {
+        button.addEventListener("click", () => {
+          supplies = supplies.filter(item => item.id !== Number(button.dataset.deleteSupply));
+          renderSupplies();
+        });
+      });
+    }
+
+    function updateStats() {
+      $("capacityStat").textContent = Number($("capacity").value) || 0;
+    }
+
+    $("regionForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const name = $("regionName").value.trim();
+      const demand = Number($("demand").value);
+      const distance = Number($("regionDistance").value);
+      if (!name || demand <= 0 || distance <= 0) return;
+      regions.push({ id: nextRegionId++, name, priority: $("priority").value, demand, distance });
+      renderRegions();
+      $("regionForm").reset();
+      $("demand").value = 20;
+      $("regionDistance").value = 8;
+    });
+
+    $("supplyForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const name = $("itemName").value.trim();
+      const qty = Number($("itemQty").value);
+      const weight = Number($("itemWeight").value);
+      const value = Number($("itemValue").value);
+      if (!name || qty <= 0 || weight <= 0 || value <= 0) return;
+      supplies.push({ id: nextSupplyId++, name, qty, weight, value });
+      renderSupplies();
+      $("supplyForm").reset();
+      $("itemQty").value = 100;
+      $("itemWeight").value = 1;
+      $("itemValue").value = 10;
+    });
+
+    $("capacity").addEventListener("input", updateStats);
+
+    function optimizePlan() {
+      const capacity = Number($("capacity").value);
+      const alpha = Number($("alpha").value);
+      const beta = Number($("beta").value);
+      if (!Number.isFinite(capacity) || capacity <= 0 || alpha < 0 || beta < 0) {
+        $("optimizationResult").innerHTML = "<h4>Check your settings</h4><p>Capacity must be positive and α and β cannot be negative.</p>";
+        return;
+      }
+      let remaining = capacity;
+      let totalValue = 0;
+      const selected = [];
+      const sortedItems = [...supplies].sort((a, b) => (b.value / b.weight) - (a.value / a.weight));
+      for (const item of sortedItems) {
+        if (remaining <= 0) break;
+        const availableWeight = item.qty * item.weight;
+        const usedWeight = Math.min(remaining, availableWeight);
+        if (usedWeight > 0) {
+          const units = usedWeight / item.weight;
+          totalValue += units * item.value;
+          selected.push(`${escapeHTML(item.name)}: ${Number(units.toFixed(2))} units`);
+          remaining -= usedWeight;
+        }
+      }
+      const orderedRegions = [...regions].sort((a, b) => {
+        const priority = { High: 0, Medium: 1, Low: 2 };
+        return priority[a.priority] - priority[b.priority] || a.distance - b.distance;
+      });
+      const distanceSum = orderedRegions.reduce((sum, region) => sum + region.distance, 0);
+      const estimatedTime = distanceSum / 40; // illustrative average speed: 40 km/h
+      const estimatedCost = distanceSum * 10; // illustrative cost: 10 units/km
+      const objective = alpha * estimatedTime + beta * estimatedCost;
+      $("optimizationResult").innerHTML = `
+        <h4>Demo optimization result</h4>
+        <p><strong>Capacity used:</strong> ${(capacity - remaining).toFixed(2)} / ${capacity} weight units</p>
+        <p><strong>Estimated supply value:</strong> ${totalValue.toFixed(2)}</p>
+        <p><strong>Illustrative travel time:</strong> ${estimatedTime.toFixed(2)} hours</p>
+        <p><strong>Illustrative transport cost:</strong> ${estimatedCost.toFixed(2)} cost units</p>
+        <p><strong>Objective Z = αT + βC:</strong> ${objective.toFixed(2)}</p>
+        <p><strong>Suggested priority order:</strong> ${orderedRegions.length ? orderedRegions.map(r => escapeHTML(r.name)).join(" → ") : "No regions registered"}</p>
+        <p><strong>Selected inventory (greedy by value/weight):</strong> ${selected.length ? selected.join("; ") : "No supplies available"}</p>`;
+    }
+
+    $("optimizeBtn").addEventListener("click", optimizePlan);
+    $("resetBtn").addEventListener("click", () => {
+      regions = structuredClone(initialRegions);
+      supplies = structuredClone(initialSupplies);
+      nextRegionId = 6;
+      nextSupplyId = 7;
+      $("capacity").value = 50;
+      $("alpha").value = 1;
+      $("beta").value = 1;
+      renderRegions();
+      renderSupplies();
+      updateStats();
+      $("optimizationResult").innerHTML = "<h4>Optimization summary</h4><p>Run the planner to estimate a supply selection and a priority-based delivery order.</p>";
+    });
+
+    renderRegions();
+    renderSupplies();
+    updateStats();
+  </script>
+</body>
+</html>
